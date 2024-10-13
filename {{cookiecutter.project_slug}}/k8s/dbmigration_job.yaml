@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: iotm2-dbmigration-job
+spec:
+  ttlSecondsAfterFinished: 120
+  template:
+    spec:
+      containers:
+        - name: alembic-migrations
+          image: $APP_IMAGE
+          command: ["alembic", "upgrade", "head"]
+          env:
+            - name: DATABASE_URL
+              value: "$DATABASE_URL"
+          resources:
+            limits:
+              memory: 100Mi
+              cpu: "0.5"
+            requests:
+              memory: 50Mi
+              cpu: "0.2"
+      restartPolicy: Never
+  backoffLimit: 4

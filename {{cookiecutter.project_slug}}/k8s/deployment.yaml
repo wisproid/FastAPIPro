@@ -1,0 +1,38 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: iotm2
+  name: iotm2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: iotm2
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: iotm2
+    spec:
+      containers:
+      - image: $APP_IMAGE
+        name: iotm2
+        ports:
+          - containerPort: 8080
+            name: http
+        env:
+          - name: DATABASE_URL
+            value: "$DATABASE_URL"
+          - name: JWT_SECRET_KEY
+            value: "$JWT_SECRET_KEY"
+          - name: JWT_ALGORITHM
+            value: "$JWT_ALGORITHM"
+          - name: JWT_ACCESS_TOKEN_EXPIRE_MINUTES
+            value: "$JWT_ACCESS_TOKEN_EXPIRE_MINUTES"
+      dnsPolicy: ClusterFirst
