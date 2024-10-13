@@ -1,5 +1,8 @@
 {
   "project_name": "FastAPIpro",
   "project_slug": "{{ cookiecutter.project_name.lower().replace(' ', '_') }}",
-  "author": "Anonymous"
+  "description": "Project description",
+  "author": "Anonymous",
+  "author_email": "anonymous@mail.com",
+  "license": "MIT"
 }

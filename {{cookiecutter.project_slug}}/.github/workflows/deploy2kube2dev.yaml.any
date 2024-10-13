@@ -69,13 +69,13 @@ jobs:
       
       - name: Setup K8S namespace
         run: | 
-          echo "TARGET_NAMESPACE=dxy-iotbe-dev-ns" >> $GITHUB_ENV
+          echo "TARGET_NAMESPACE=dxy-{{cookiecutter.project_slug}}-dev-ns" >> $GITHUB_ENV
           echo ${{ env.TARGET_NAMESPACE }}
 
       - name: Scan version number
         run: | 
           export APP_VERSION=$(cat __version__)
-          export APP_IMAGE=dxyiot/iotbe:$APP_VERSION
+          export APP_IMAGE=dxyiot/{{cookiecutter.project_slug}}:$APP_VERSION
           echo "APP_IMAGE=$APP_IMAGE" >> $GITHUB_ENV
           echo $APP_VERSION
           echo $APP_IMAGE
@@ -115,7 +115,7 @@ jobs:
 
       - name: Wait for job to complete
         run: |
-          export JOB_NAME=iotbe-dbmigration-job
+          export JOB_NAME={{cookiecutter.project_slug}}-dbmigration-job
           kubectl --kubeconfig ~/kubeconfig.yaml wait --for=condition=complete --timeout=30s job/$JOB_NAME -n ${{ env.TARGET_NAMESPACE }}
 
       - name: Get job exit code

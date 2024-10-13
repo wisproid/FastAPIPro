@@ -3,7 +3,7 @@ services:
     image: postgres:14.1-alpine
     restart: on-failure
     environment:
-      - POSTGRES_DB=iotm2
+      - POSTGRES_DB={{cookiecutter.project_slug}}
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
     ports:

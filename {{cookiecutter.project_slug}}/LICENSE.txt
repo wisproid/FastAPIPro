@@ -1,1 +1,1 @@
-Copyright 2024 Heri Cahyono
+Copyright 2024 {{cookiecutter.author}}
