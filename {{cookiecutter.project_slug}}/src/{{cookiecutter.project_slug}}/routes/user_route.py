@@ -9,7 +9,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter()
 
 
 @router.get("/user/me")

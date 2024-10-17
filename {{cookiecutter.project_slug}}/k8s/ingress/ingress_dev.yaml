@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-production
+    kubernetes.io/ingress.class: traefik
+  labels:
+    app: {{cookiecutter.project_slug}}
+  name: {{cookiecutter.project_slug}}
+  namespace: dev-ns
+spec:
+  rules:
+  - host: svc-dev.wispro.id # Change by your domain
+    http:
+      paths:
+      - backend:
+          service:
+            name: {{cookiecutter.project_slug}}-svc
+            port: 
+              number: 8080
+        path: /api/v1
+        pathType: Prefix  
+  tls:
+  - hosts:
+    - svc-dev.wispro.id # Change by your domain
+    secretName: svc-dev-id-tls

@@ -25,7 +25,6 @@ version = pkg_resources.require(__package__)[0].version
 app = FastAPI(title=__package__, version=version, lifespan=lifespan)
 
 app.include_router(websocket_serv.router)
-app.include_router(gateway_pixii.router)
 
 ## CORS
 origins = [
@@ -56,8 +55,8 @@ async def add_process_time_header(request: Request, call_next):
     return response
 
 
-@app.head("/api/v1/healthcheck")
-@app.get("/api/v1/healthcheck")
+@app.head("/healthcheck")
+@app.get("/healthcheck")
 async def get_healthcheck(request: Request):
     return ORJSONResponse(
         content={

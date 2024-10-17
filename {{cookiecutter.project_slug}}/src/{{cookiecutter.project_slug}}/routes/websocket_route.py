@@ -7,7 +7,7 @@ from {{cookiecutter.project_slug}}.utils.websocket_manager import manager as ws_
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/api/v1")
+router = APIRouter()
 
 @router.websocket("/ws/{room_id}/{client_id}")
 async def websocket_endpoint(websocket: WebSocket, room_id: str, client_id: str):

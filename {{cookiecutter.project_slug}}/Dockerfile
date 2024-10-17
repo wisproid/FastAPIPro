@@ -11,5 +11,5 @@ RUN pip install *.whl --no-cache-dir
 
 EXPOSE $PORT
 ENV PORT=$PORT
-ENV EXE="python -m granian --interface asgi {{cookiecutter.project_slug}}.main:app --host 0.0.0.0 --port ${PORT} --access-log"
+ENV EXE="python -m granian --interface asgi {{cookiecutter.project_slug}}.main:app --host 0.0.0.0 --port ${PORT} --access-log --url-path-prefix /api/v1"
 CMD EXE
