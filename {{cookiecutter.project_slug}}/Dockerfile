@@ -11,4 +11,5 @@ RUN pip install *.whl --no-cache-dir
 
 EXPOSE $PORT
 ENV PORT=$PORT
-CMD ["python", "-m", "granian", "--interface", "asgi", "{{cookiecutter.project_slug}}.main:app", "--host", "0.0.0.0", "--port", "$PORT", "--access-log"]
+ENV EXE="python -m granian --interface asgi {{cookiecutter.project_slug}}.main:app --host 0.0.0.0 --port ${PORT} --access-log"
+CMD EXE

@@ -1,0 +1,22 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql-cluster
+spec:
+  instances: 2
+  primaryUpdateStrategy: unsupervised 
+  storage:   
+    size: 5Gi
+  postgresql:
+    parameters:
+      max_connections: "300"
+      shared_buffers: "80MB"
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "50m"
+    limits:
+      memory: "256Mi"
+      cpu: "100m"
+  superuserSecret:
+    name: superuser-secret

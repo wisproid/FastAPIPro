@@ -34,14 +34,6 @@ class PaginationSchema(BaseModelSchema):
 
 class ResponseExampleDataSchema(BaseModelSchema):
     file_name: str
-    file_size: int
-    lpn: str = ""
-    lpn_score: int = -1
-    lpn_bbox: list = []
-    car_bbox: list = []
-    car_score: int = -1
-    # datetime_utc: Union[dt, None] = Field(examples=["2022-01-01T00:00:00+00:00"])
-    # datetime: Union[dt, None] = Field(examples=["2022-01-01T07:00:00+07:00"])
 
 class ResponseExampleSchema(ResponseSchema):
     data: ResponseExampleDataSchema

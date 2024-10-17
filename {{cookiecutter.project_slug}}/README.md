@@ -25,7 +25,7 @@ nano .env
 ```
 ```
 DATABASE_URL="postgresql+asyncpg://postgres:postgres@127.0.0.1:5454/{{cookiecutter.project_slug}}"
-JWT_SECRET_KEY=""
+JWT_SECRET_KEY="<opensslkey>"
 JWT_ALGORITHM="HS256"
 JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440
 ```

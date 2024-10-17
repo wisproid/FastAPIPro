@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql-cluster-ro-remote
+  labels:
+    postgresql: postgresql-cluster
+spec:
+  selector:
+    postgresql: postgresql-cluster
+    role: replica
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
