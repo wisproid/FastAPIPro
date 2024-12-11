@@ -1,40 +1,56 @@
-# {{cookiecutter.project_slug}}
-{{cookiecutter.description}}
-
-# Quick Start
 ```
-cd {{cookiecutter.project_slug}}
+pip3 install cookiecutter
 ```
 ```
-virtualenv .venv --py 310
+pip3 install uv
 ```
 ```
-source .venv/bin/active
+uv sync
 ```
-```
-pip install -e .
-```
-```
-docker compose -f docker-compose-dev.yaml up
-```
-```
-openssl rand -hex 32
-```
-```
-nano .env
-```
-```
-DATABASE_URL="postgresql+asyncpg://postgres:postgres@127.0.0.1:5454/{{cookiecutter.project_slug}}"
-JWT_SECRET_KEY="<opensslkey>"
-JWT_ALGORITHM="HS256"
-JWT_ACCESS_TOKEN_EXPIRE_MINUTES=1440
-```
+--
 ```
 dotenv run alembic revision --autogenerate
 ```
 ```
 dotenv run alembic upgrade head
 ```
+
+Get JWT Token
 ```
-dotenv run python -m granian --interface asgi {{cookiecutter.project_slug}}.main:app --host 0.0.0.0 --port 8080 --access-log
+dotenv run python script_generate_token.py <username> <type>
+```
+
+Generate JWT Secret Key
+```
+openssl rand -hex 32
+```
+
+Create .env file
+```
+touch .env
+```
+
+Enable granian reload on dev
+```
+uv pip install "granian[reload]"
+```
+
+Run on dev
+```
+docker compose -f docker-compose-dev.yaml up
+dotenv run python -m granian --interface asgi {{cookiecutter.project_slug}}.main:app --host 0.0.0.0 --port 8080 --access-log --reload --url-path-prefix /api/v1
+```
+
+** Deployment
+Replace <project_name> in the github action yaml
+```
+- name: Define App Name
+  run: | 
+    echo "APP_NAME=<project_name>" >> $GITHUB_ENV
+    echo ${{ env.APP_NAME }}
+
+- name: Define K8S namespace
+  run: | 
+    echo "TARGET_NAMESPACE=<project_name>-dev-ns" >> $GITHUB_ENV
+    echo ${{ env.TARGET_NAMESPACE }}
 ```

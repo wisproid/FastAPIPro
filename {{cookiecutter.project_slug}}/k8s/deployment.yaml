@@ -6,7 +6,7 @@ metadata:
     app: {{cookiecutter.project_slug}}
   name: {{cookiecutter.project_slug}}
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: {{cookiecutter.project_slug}}
@@ -23,19 +23,21 @@ spec:
       containers:
       - image: $APP_IMAGE
         name: {{cookiecutter.project_slug}}
+        resources:
+          limits:
+            memory: 600Mi
+            cpu: 1
+          requests:
+            memory: 300Mi
+            cpu: 500m
         ports:
           - containerPort: 8080
             name: http
-            resources:
-              limits:
-                memory: 600Mi
-                cpu: 1
-              requests:
-                memory: 300Mi
-                cpu: 500m
         env:
           - name: DATABASE_URL
             value: "$DATABASE_URL"
+          - name: REDIS_URL
+            value: "$REDIS_URL"
           - name: JWT_SECRET_KEY
             value: "$JWT_SECRET_KEY"
           - name: JWT_ALGORITHM

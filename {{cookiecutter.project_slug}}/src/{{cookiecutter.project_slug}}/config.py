@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str  = "HS256"
     JWT_ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    DOCS_BASIC_AUTH_USERNAME: str = "admin"
+    DOCS_BASIC_AUTH_PASSWORD: str = "password"
+
 @lru_cache
 def get_settings() -> Settings:
     return Settings()

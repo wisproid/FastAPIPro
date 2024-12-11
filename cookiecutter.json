@@ -4,5 +4,10 @@
   "description": "Project description",
   "author": "Anonymous",
   "author_email": "anonymous@mail.com",
-  "license": "MIT"
+  "license": "MIT",
+  "_copy_without_render": [
+        "k8s/redis/values-origin.yaml",
+        ".github/workflows/deploy2kube2dev.yaml.example",
+        ".github/workflows/deploy2kube2dev2azure.yaml.example"
+    ]
 }

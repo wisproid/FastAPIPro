@@ -9,7 +9,8 @@ spec:
       containers:
         - name: alembic-migrations
           image: $APP_IMAGE
-          command: ["alembic", "upgrade", "head"]
+          workingDir: /app
+          command: [".venv/bin/alembic", "upgrade", "head"]
           env:
             - name: DATABASE_URL
               value: "$DATABASE_URL"

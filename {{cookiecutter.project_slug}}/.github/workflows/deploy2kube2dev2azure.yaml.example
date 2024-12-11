@@ -6,80 +6,34 @@ on:
     paths:
       - "src/**"
       - "k8s/**"
-      - "setup.cfg"
       - "Dockerfile"
       - ".github/workflows/deploy2kube2dev2azure.yaml"
       - "migrations/**"
-      - "__version__"
+      - "pyproject.toml"
     
 jobs:
   build:
-    name: Build
+    name: CICD
     runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false  # false: try to complete all jobs
-      matrix:
-        python-version: ["3.10"]
 
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
-
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
-
-      - name: Build wheel
-        run: |
-          python script_update_requirements.py
-          export SETUPTOOLS_SCM_PRETEND_VERSION=$(cat __version__)
-          pip install setuptools setuptools-scm wheel 
-          python setup.py bdist_wheel
-          tree -L 2 .
-
-      - name: Upload file
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-artifact
-          path: | 
-            ./dist/*.whl
-            ./k8s/*.yaml
-            ./Dockerfile
-            ./requirements.txt
-            ./alembic-docker.ini
-            ./__version__
-
-  deploy:
-    name: Deploy
-    runs-on: ubuntu-latest
-    needs: [build]
-    environment: azure_kerb_centralindia_dev
-
-    steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: my-artifact
-
-      - name: Listed the files
-        run: tree -L 2 .
       
-      - name: Setup K8S namespace
+      - name: Define App Name
         run: | 
-          echo "TARGET_NAMESPACE={{cookiecutter.project_slug}}-dev-ns" >> $GITHUB_ENV
-          echo ${{ env.TARGET_NAMESPACE }}
+          echo "APP_NAME=<project_name>" >> $GITHUB_ENV
 
-      - name: Scan version number
+      - name: Define K8S namespace
         run: | 
-          export APP_VERSION=$(cat __version__)
-          export APP_IMAGE=${{ vars.CONTAINER_REGISTRY_NAME }}.azurecr.io/{{cookiecutter.project_slug}}:$APP_VERSION
-          echo "APP_IMAGE=$APP_IMAGE" >> $GITHUB_ENV
-          echo $APP_VERSION
-          echo $APP_IMAGE
+          echo "TARGET_NAMESPACE=<project_name>-dev-ns" >> $GITHUB_ENV
+
+      - name: Define docker tag
+        run: |
+          export APP_VER=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
+          echo "APP_VERSION=$APP_VER" >> $GITHUB_ENV
+          echo APP_IMAGE="${{ vars.DEV_DOCKERHUB_USERNAME }}/${{ env.APP_NAME }}:dev-$APP_VER" >> $GITHUB_ENV
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -87,13 +41,11 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: 'Log into Azure using github secret AZURE_CREDENTIALS'
-        uses: Azure/login@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Login into Azure Container Registries
-        run: az acr login --name ${{ vars.CONTAINER_REGISTRY_NAME }}
+          username: ${{ vars.DEV_DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DEV_DOCKERHUB_TOKEN }}
 
       - name: Build and push
         uses: docker/build-push-action@v5
@@ -106,21 +58,38 @@ jobs:
           build-args: |
             GITHUB_SHA=${{ github.sha }}
 
+      - name: 'Log into Azure using github secret AZURE_CREDENTIALS'
+        uses: Azure/login@v2
+        with:
+          creds: ${{ secrets.DEV_AZURE_CREDENTIALS }}
+
       - name: 'Show azure account'
         run: |
           az account show
-          az aks get-credentials -g ${{ vars.AZURE_RESOURCE_GROUP }} -n ${{ vars.K8S_CLUSTER_NAME }}
-          kubectl config use-context ${{ vars.K8S_CLUSTER_NAME }}
+          az aks get-credentials -g ${{ vars.DEV_AZURE_RESOURCE_GROUP }} -n ${{ vars.DEV_K8S_CLUSTER_NAME }}
+          kubectl config use-context ${{ vars.DEV_K8S_CLUSTER_NAME }}
+
+      - name: Install yq
+        run: |
+          wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/local/bin/yq
+          chmod +x /usr/local/bin/yq
+  
+      - name: Modify YAML file with yq
+        run: |
+          yq eval '.spec.template.spec.imagePullSecrets += [{"name": "${{ vars.DEV_K8S_DOCKERHUB_AUTH }}"}]' -i k8s/dbmigration_job.yaml
+          yq eval '.spec.template.spec.imagePullSecrets += [{"name": "${{ vars.DEV_K8S_DOCKERHUB_AUTH }}"}]' -i k8s/deployment.yaml
+          cat k8s/dbmigration_job.yaml
+          cat k8s/deployment.yaml
 
       - name: Database migration
         run: |
-          export DATABASE_URL=${{ secrets.DATABASE_URL }}
+          export DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}
           envsubst < k8s/dbmigration_job.yaml | kubectl apply --force -n ${{ env.TARGET_NAMESPACE }} -f -
 
       - name: Wait for job to complete
         run: |
-          export JOB_NAME={{cookiecutter.project_slug}}-dbmigration-job
-          kubectl wait --for=condition=complete --timeout=30s job/$JOB_NAME -n ${{ env.TARGET_NAMESPACE }}
+          export JOB_NAME=${{ env.APP_NAME }}-dbmigration-job
+          kubectl wait --for=condition=complete --timeout=60s job/$JOB_NAME -n ${{ env.TARGET_NAMESPACE }}
 
       - name: Get job exit code
         id: get-exit-code
@@ -140,8 +109,8 @@ jobs:
 
       - name: 'Apply k8s manifests'
         run: |
-          export DATABASE_URL=${{ secrets.DATABASE_URL }}
-          export JWT_SECRET_KEY=${{ secrets.JWT_SECRET_KEY }}
-          export JWT_ALGORITHM=${{ secrets.JWT_ALGORITHM }}
-          export JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.JWT_ACCESS_TOKEN_EXPIRE_MINUTES }}
+          export DATABASE_URL=${{ secrets.DEV_DATABASE_URL }}
+          export JWT_SECRET_KEY=${{ secrets.DEV_JWT_SECRET_KEY }}
+          export JWT_ALGORITHM=${{ secrets.DEV_JWT_ALGORITHM }}
+          export JWT_ACCESS_TOKEN_EXPIRE_MINUTES=${{ secrets.DEV_JWT_ACCESS_TOKEN_EXPIRE_MINUTES }}
           envsubst < k8s/deployment.yaml | kubectl apply -n ${{ env.TARGET_NAMESPACE }} -f -

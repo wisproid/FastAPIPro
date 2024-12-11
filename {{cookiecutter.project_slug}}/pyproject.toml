@@ -1,9 +1,48 @@
-[build-system]
-# AVOID CHANGING REQUIRES: IT WILL BE UPDATED BY PYSCAFFOLD!
-requires = ["setuptools>=46.1.0", "setuptools_scm[toml]>=5"]
-build-backend = "setuptools.build_meta"
+[project]
+name = "{{cookiecutter.project_slug}}"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic>=1.13.3",
+    "asyncpg>=0.29.0",
+    "celery>=5.4.0",
+    "fastapi>=0.115.5",
+    "flower>=2.0.1",
+    "granian>=1.6.3",
+    "orjson>=3.10.11",
+    "psycopg2-binary>=2.9.10",
+    "pydantic-settings>=2.2.1",
+    "pyjwt>=2.8.0",
+    "redis>=5.2.0",
+    "sqlalchemy[asyncio]==2.0.36",
+    "websocket==0.2.1",
+]
 
-[tool.setuptools_scm]
-# For smarter version schemes and other configuration options,
-# check out https://github.com/pypa/setuptools_scm
-version_scheme = "no-guess-dev"
+[dependency-groups]
+dev = [
+    "granian[reload]>=1.6.3",
+]
+
+[build-system]
+requires = ["setuptools>=42", "wheel", "nuitka", "toml"]
+build-backend = "nuitka.distutils.Build"
+
+# Data files are to be handled by setuptools and not Nuitka
+# [tool.setuptools.package-data]
+# some_package = ['data_file.txt']
+
+[tool.nuitka]
+# These are not recommended, but they make it obvious to have effect.
+
+# boolean option, e.g. if you cared for C compilation commands, leading
+# dashes are omitted
+show-scons = true
+
+# options with single values, e.g. enable a plugin of Nuitka
+# enable-plugin = "pyside2"
+
+# options with several values, e.g. avoiding including modules, accepts
+# list argument.
+nofollow-import-to = ["*.tests", "*.distutils"]
