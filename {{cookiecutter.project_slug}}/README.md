@@ -45,12 +45,12 @@ dotenv run python -m granian --interface asgi {{cookiecutter.project_slug}}.main
 Replace <project_name> in the github action yaml
 ```
 - name: Define App Name
-  run: | 
+  run: |
     echo "APP_NAME=<project_name>" >> $GITHUB_ENV
-    echo ${{ env.APP_NAME }}
+    echo $\{\{ env.APP_NAME \}\}
 
 - name: Define K8S namespace
-  run: | 
+  run: |
     echo "TARGET_NAMESPACE=<project_name>-dev-ns" >> $GITHUB_ENV
-    echo ${{ env.TARGET_NAMESPACE }}
+    echo $\{\{ env.TARGET_NAMESPACE \}\}
 ```
